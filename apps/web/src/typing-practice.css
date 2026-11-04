@@ -259,7 +259,9 @@ button {
   56%, 100% { opacity: 0; }
 }
 
-.ghost {
+/* The invisible textarea that captures keystrokes: it sits over the rendered text, so the caret and
+   selection are the app's own. Named apart from `.ghost` above, which is the restart button. */
+.input {
   position: absolute;
   inset: 0;
   width: 100%;

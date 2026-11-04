@@ -1,5 +1,15 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import "./styles.css";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { ChangeEvent, ReactNode } from "react";
+
+import "./typing-practice.css";
+
+interface PracticeText {
+  readonly id: string;
+  readonly kind: "prose" | "code";
+  readonly title: string;
+  readonly source: string;
+  readonly text: string;
+}
 
 const TEXTS = [
   {
@@ -107,45 +117,53 @@ const TEXTS = [
   console.log(out);
 }`,
   },
-];
+] as const satisfies readonly PracticeText[];
 
-const WINDOW_MS = 10000;
+/** The rolling window the "cpm · now" figure is measured over. */
+const WINDOW_MS = 10_000;
 
-function formatTime(ms) {
+/** One keystroke, timed, so the rolling and overall rates can be recomputed without re-reading input. */
+interface KeyStroke {
+  readonly t: number;
+  readonly ok: boolean;
+}
+
+function formatTime(ms: number): string {
   const total = Math.max(0, Math.round(ms / 1000));
   const m = Math.floor(total / 60);
   const s = total % 60;
   return m > 0 ? `${m}m ${s}s` : `${s}s`;
 }
 
-export default function App() {
-  const [sel, setSel] = useState(TEXTS[0].id);
-  const current = TEXTS.find((t) => t.id === sel);
+export function TypingPractice() {
+  const [sel, setSel] = useState<string>(TEXTS[0].id);
+  const current = TEXTS.find((t) => t.id === sel) ?? TEXTS[0];
   const text = current.text;
 
   const [typed, setTyped] = useState("");
-  const [events, setEvents] = useState([]);
+  const [events, setEvents] = useState<KeyStroke[]>([]);
   const [mistakes, setMistakes] = useState(0);
-  const [startedAt, setStartedAt] = useState(null);
-  const [doneAt, setDoneAt] = useState(null);
+  const [startedAt, setStartedAt] = useState<number | null>(null);
+  const [doneAt, setDoneAt] = useState<number | null>(null);
   const [now, setNow] = useState(() => Date.now());
 
-  const inputRef = useRef(null);
-  const boxRef = useRef(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const boxRef = useRef<HTMLDivElement>(null);
 
   const done = doneAt !== null;
   const pos = typed.length;
 
   useEffect(() => {
-    if (!startedAt || done) return undefined;
+    if (startedAt === null || done) return undefined;
     const id = setInterval(() => setNow(Date.now()), 200);
     return () => clearInterval(id);
   }, [startedAt, done]);
 
+  // Keep the caret line inside the scrollable text box, centring it when it leaves the visible band.
   useEffect(() => {
     const box = boxRef.current;
     if (!box) return;
-    const el = box.querySelector(`[data-i="${pos}"]`);
+    const el = box.querySelector<HTMLElement>(`[data-i="${pos}"]`);
     if (!el) return;
     const top = el.offsetTop;
     const bottom = top + el.offsetHeight;
@@ -162,28 +180,27 @@ export default function App() {
     return n;
   }, [typed, text, pos]);
 
-  const elapsedMs = startedAt ? (done ? doneAt : now) - startedAt : 0;
+  const endAt = doneAt ?? now;
+  const elapsedMs = startedAt === null ? 0 : endAt - startedAt;
   const correctNet = pos - errChars;
   const overallCPM = elapsedMs > 0 ? (correctNet / elapsedMs) * 60000 : 0;
-  const progress = text.length ? pos / text.length : 0;
+  const progress = text.length > 0 ? pos / text.length : 0;
 
   const currentCPM = useMemo(() => {
-    if (!startedAt) return 0;
-    const end = done ? doneAt : now;
-    const winStart = Math.max(startedAt, end - WINDOW_MS);
+    if (startedAt === null) return 0;
+    const winStart = Math.max(startedAt, endAt - WINDOW_MS);
     let ok = 0;
     for (const e of events) {
-      if (e.t >= winStart && e.t <= end && e.ok) ok += 1;
+      if (e.t >= winStart && e.t <= endAt && e.ok) ok += 1;
     }
-    const spanMs = Math.max(end - winStart, 500);
+    const spanMs = Math.max(endAt - winStart, 500);
     return (ok / spanMs) * 60000;
-  }, [events, startedAt, doneAt, now, done]);
+  }, [events, startedAt, endAt]);
 
-  const accuracy = events.length
-    ? ((events.length - mistakes) / events.length) * 100
-    : 100;
+  const accuracy =
+    events.length > 0 ? ((events.length - mistakes) / events.length) * 100 : 100;
 
-  const reset = (id) => {
+  const reset = (id?: string) => {
     if (id !== undefined) setSel(id);
     setTyped("");
     setEvents([]);
@@ -192,11 +209,11 @@ export default function App() {
     setDoneAt(null);
     setNow(Date.now());
     requestAnimationFrame(() => {
-      if (inputRef.current) inputRef.current.focus();
+      inputRef.current?.focus();
     });
   };
 
-  const onChange = (e) => {
+  const onChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     if (done) {
       e.target.value = typed;
       return;
@@ -208,24 +225,24 @@ export default function App() {
     }
     v = v.slice(0, text.length);
     const added = v.slice(typed.length);
-    if (!added) return;
+    if (added.length === 0) return;
     const t = Date.now();
-    if (!startedAt) setStartedAt(t);
+    if (startedAt === null) setStartedAt(t);
     setNow(t);
-    const evs = [];
+    const strokes: KeyStroke[] = [];
     let m = 0;
     for (let i = 0; i < added.length; i += 1) {
       const ok = added[i] === text[typed.length + i];
       if (!ok) m += 1;
-      evs.push({ t, ok });
+      strokes.push({ t, ok });
     }
-    setEvents((prev) => [...prev, ...evs]);
+    setEvents((prev) => [...prev, ...strokes]);
     setMistakes((prev) => prev + m);
     setTyped(v);
     if (v.length === text.length) setDoneAt(t);
   };
 
-  const chars = [];
+  const chars: ReactNode[] = [];
   for (let i = 0; i < text.length; i += 1) {
     let cls = "ch";
     if (i < pos) cls = typed[i] === text[i] ? "ch ok" : "ch err";
@@ -269,15 +286,15 @@ export default function App() {
 
       <div className="stats">
         <div className="stat">
-          <div className="v accent">{startedAt ? Math.round(currentCPM) : "–"}</div>
+          <div className="v accent">{startedAt === null ? "–" : Math.round(currentCPM)}</div>
           <div className="l">cpm · now</div>
         </div>
         <div className="stat">
-          <div className="v">{startedAt ? Math.round(overallCPM) : "–"}</div>
+          <div className="v">{startedAt === null ? "–" : Math.round(overallCPM)}</div>
           <div className="l">cpm · avg</div>
         </div>
         <div className="stat">
-          <div className="v">{events.length ? `${accuracy.toFixed(1)}%` : "–"}</div>
+          <div className="v">{events.length > 0 ? `${accuracy.toFixed(1)}%` : "–"}</div>
           <div className="l">accuracy</div>
         </div>
         <div className="stat">
@@ -285,7 +302,7 @@ export default function App() {
           <div className="l">errors</div>
         </div>
         <div className="stat">
-          <div className="v">{startedAt ? formatTime(elapsedMs) : "–"}</div>
+          <div className="v">{startedAt === null ? "–" : formatTime(elapsedMs)}</div>
           <div className="l">time</div>
         </div>
         <div className="stat">
@@ -298,13 +315,13 @@ export default function App() {
         <div className="fill" style={{ width: `${progress * 100}%` }} />
       </div>
 
-      <section className="card" onClick={() => inputRef.current && inputRef.current.focus()}>
+      <section className="card" onClick={() => inputRef.current?.focus()}>
         <div className="textwrap" ref={boxRef}>
           <div className="text">{chars}</div>
         </div>
         <textarea
           ref={inputRef}
-          className="ghost"
+          className="input"
           value={typed}
           onChange={onChange}
           autoCapitalize="off"

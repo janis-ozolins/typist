@@ -1,9 +1,7 @@
 # typist
 
-A minimal typing-practice mini app in the Mistral Vibe mini-app format: a self-contained React app that renders in the Canvas panel.
-
-- `index.js` — the app (default-exported React component)
-- `styles.css` — styles; JetBrains Mono, dark minimal theme with Mistral orange accents
+A typing-practice app on the Mistral apps stack: a TanStack Start web app (`apps/web`) that serves a
+single page at `/`.
 
 ## Features
 
@@ -12,6 +10,22 @@ A minimal typing-practice mini app in the Mistral Vibe mini-app format: a self-c
 - Live stats: current CPM (rolling 10 s window), overall CPM, accuracy, error count, elapsed time, progress %
 - Completion summary with avg CPM / accuracy / errors and a restart button
 
+## Where things live
+
+| Path | What |
+| --- | --- |
+| `apps/web/src/routes/index.tsx` | The `/` route; renders the typing app |
+| `apps/web/src/typing-practice.tsx` | The typing app component: texts, input handling, stats |
+| `apps/web/src/typing-practice.css` | Its styles; JetBrains Mono, dark minimal theme with Mistral orange accents |
+| `apps/web/src/index.css` | The Tailwind entry point and global styles |
+| `mistral.json` | The app manifest: the `web` module, its port and build |
+
 ## Run
 
-Create a mini app in Vibe Work and use these two files as its source, or serve them from any static host with an `index.html` shell that provides React.
+```bash
+bun run install-all   # once: JS and Python dependencies
+bun run dev:web       # serves the app on http://localhost:3001
+```
+
+Other targets: `bun run build`, `bun run test`. `mistral apps dev` runs the web app with the rest of
+the app.
