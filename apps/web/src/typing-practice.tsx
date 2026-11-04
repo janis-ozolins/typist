@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import type { ChangeEvent, ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { CSSProperties, KeyboardEvent, ReactNode } from "react";
 
-import "./typing-practice.css";
+const FONT = "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
 
 interface PracticeText {
   readonly id: string;
@@ -13,346 +13,607 @@ interface PracticeText {
 
 const TEXTS = [
   {
-    id: "pride",
-    kind: "prose",
-    title: "Pride & Prejudice",
-    source: "Jane Austen — Pride and Prejudice (1813)",
-    text: "It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife. However little known the feelings or views of such a man may be on his first entering a neighbourhood, this truth is so well fixed in the minds of the surrounding families.",
-  },
-  {
-    id: "twocities",
+    id: "two-cities",
     kind: "prose",
     title: "A Tale of Two Cities",
-    source: "Charles Dickens — A Tale of Two Cities (1859)",
+    source: "Charles Dickens, 1859",
     text: "It was the best of times, it was the worst of times, it was the age of wisdom, it was the age of foolishness, it was the epoch of belief, it was the epoch of incredulity, it was the season of Light, it was the season of Darkness, it was the spring of hope, it was the winter of despair.",
   },
   {
-    id: "1984",
+    id: "pride",
+    kind: "prose",
+    title: "Pride and Prejudice",
+    source: "Jane Austen, 1813",
+    text: "It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife. However little known the feelings or views of such a man may be on his first entering a neighbourhood, this truth is so well fixed in the minds of the surrounding families, that he is considered as the rightful property of some one or other of their daughters.",
+  },
+  {
+    id: "nineteen-eighty-four",
     kind: "prose",
     title: "Nineteen Eighty-Four",
-    source: "George Orwell — Nineteen Eighty-Four (1949)",
+    source: "George Orwell, 1949",
     text: "It was a bright cold day in April, and the clocks were striking thirteen. Winston Smith, his chin nuzzled into his breast in an effort to escape the vile wind, slipped quickly through the glass doors of Victory Mansions, though not quickly enough to prevent a swirl of gritty dust from entering along with him.",
   },
   {
-    id: "moby",
+    id: "moby-dick",
     kind: "prose",
-    title: "Moby Dick",
-    source: "Herman Melville — Moby Dick (1851)",
-    text: "Call me Ishmael. Some years ago — never mind how long precisely — having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world.",
+    title: "Moby-Dick",
+    source: "Herman Melville, 1851",
+    text: "Call me Ishmael. Some years ago (never mind how long precisely), having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world.",
   },
   {
-    id: "gatsby",
+    id: "jabberwocky",
     kind: "prose",
-    title: "The Great Gatsby",
-    source: "F. Scott Fitzgerald — The Great Gatsby (1925)",
-    text: "In my younger and more vulnerable years my father gave me some advice that I've been turning over in my mind ever since. \"Whenever you feel like criticizing any one,\" he told me, \"just remember that all the people in this world haven't had the advantages that you've had.\"",
+    title: "Jabberwocky",
+    source: "Lewis Carroll, 1871",
+    text: "'Twas brillig, and the slithy toves did gyre and gimble in the wabe: all mimsy were the borogoves, and the mome raths outgrabe.",
   },
   {
-    id: "hamlet",
-    kind: "prose",
-    title: "Hamlet",
-    source: "William Shakespeare — Hamlet, Act 3 Scene 1",
-    text: "To be, or not to be, that is the question: Whether 'tis nobler in the mind to suffer The slings and arrows of outrageous fortune, Or to take arms against a sea of troubles, And by opposing end them.",
-  },
-  {
-    id: "hobbit",
-    kind: "prose",
-    title: "The Hobbit",
-    source: "J.R.R. Tolkien — The Hobbit (1937)",
-    text: "In a hole in the ground there lived a hobbit. Not a nasty, dirty, wet hole, filled with the ends of worms and an oozy smell, nor yet a dry, bare, sandy hole with nothing in it to sit down on or to eat: it was a hobbit-hole, and that means comfort.",
+    id: "fizzbuzz",
+    kind: "code",
+    title: "FizzBuzz",
+    source: "Python · classic interview",
+    text: `def fizzbuzz(n):
+    for i in range(1, n + 1):
+        if i % 15 == 0:
+            print("FizzBuzz")
+        elif i % 3 == 0:
+            print("Fizz")
+        elif i % 5 == 0:
+            print("Buzz")
+        else:
+            print(i)`,
   },
   {
     id: "quicksort",
     kind: "code",
-    title: "Quicksort (Python)",
-    source: "Classic divide-and-conquer sorting",
-    text: `def quicksort(items):
-    if len(items) <= 1:
-        return items
-    pivot = items[len(items) // 2]
-    left = [x for x in items if x < pivot]
-    middle = [x for x in items if x == pivot]
-    right = [x for x in items if x > pivot]
-    return quicksort(left) + middle + quicksort(right)`,
+    title: "Quicksort",
+    source: "Python · classic algorithm",
+    text: `def quicksort(a):
+    if len(a) <= 1:
+        return a
+    pivot = a[len(a) // 2]
+    left = [x for x in a if x < pivot]
+    mid = [x for x in a if x == pivot]
+    right = [x for x in a if x > pivot]
+    return quicksort(left) + mid + quicksort(right)`,
   },
   {
-    id: "binarysearch",
+    id: "binary-search",
     kind: "code",
-    title: "Binary search (JS)",
-    source: "O(log n) lookup in a sorted array",
-    text: `function binarySearch(sorted, target) {
-  let lo = 0, hi = sorted.length - 1;
-  while (lo <= hi) {
-    const mid = (lo + hi) >> 1;
-    if (sorted[mid] === target) return mid;
-    if (sorted[mid] < target) lo = mid + 1;
-    else hi = mid - 1;
-  }
-  return -1;
-}`,
+    title: "Binary Search",
+    source: "Python · classic algorithm",
+    text: `def search(items, target):
+    lo, hi = 0, len(items) - 1
+    while lo <= hi:
+        mid = (lo + hi) // 2
+        if items[mid] == target:
+            return mid
+        if items[mid] < target:
+            lo = mid + 1
+        else:
+            hi = mid - 1
+    return -1`,
   },
   {
     id: "debounce",
     kind: "code",
-    title: "Debounce (JS)",
-    source: "Delay a function until calls stop coming",
+    title: "Debounce",
+    source: "JavaScript · utility",
     text: `function debounce(fn, wait) {
   let timer = null;
-  return (...args) => {
+  return function (...args) {
     clearTimeout(timer);
     timer = setTimeout(() => fn.apply(this, args), wait);
   };
 }`,
   },
-  {
-    id: "fizzbuzz",
-    kind: "code",
-    title: "FizzBuzz (JS)",
-    source: "The classic interview loop, punctuation-heavy",
-    text: `for (let i = 1; i <= 100; i++) {
-  const out = i % 3 === 0 && i % 5 === 0 ? "FizzBuzz"
-    : i % 3 === 0 ? "Fizz"
-    : i % 5 === 0 ? "Buzz"
-    : String(i);
-  console.log(out);
-}`,
-  },
 ] as const satisfies readonly PracticeText[];
 
-/** The rolling window the "cpm · now" figure is measured over. */
-const WINDOW_MS = 10_000;
+const KINDS = [
+  { id: "prose", label: "Prose" },
+  { id: "code", label: "Code" },
+] as const;
 
-/** One keystroke, timed, so the rolling and overall rates can be recomputed without re-reading input. */
-interface KeyStroke {
-  readonly t: number;
-  readonly ok: boolean;
-}
+const C = {
+  bg: "#0d0f12",
+  card: "#13161b",
+  border: "#23272f",
+  untyped: "#c9ced6",
+  ok: "#5f6672",
+  err: "#ff5f56",
+  accent: "#ff7000",
+  muted: "#6b7280",
+};
 
-function formatTime(ms: number): string {
-  const total = Math.max(0, Math.round(ms / 1000));
-  const m = Math.floor(total / 60);
-  const s = total % 60;
-  return m > 0 ? `${m}m ${s}s` : `${s}s`;
+function Stat({
+  label,
+  value,
+  accent,
+}: {
+  label: string;
+  value: ReactNode;
+  accent?: boolean;
+}) {
+  return (
+    <div className="flex flex-col items-center min-w-[64px]">
+      <div
+        style={{
+          fontFamily: FONT,
+          fontSize: 22,
+          fontWeight: 600,
+          lineHeight: 1.1,
+          color: accent ? C.accent : "#e8eaed",
+        }}
+      >
+        {value}
+      </div>
+      <div
+        style={{
+          fontFamily: FONT,
+          fontSize: 9,
+          letterSpacing: 1.6,
+          color: C.muted,
+          textTransform: "uppercase",
+          marginTop: 5,
+        }}
+      >
+        {label}
+      </div>
+    </div>
+  );
 }
 
 export function TypingPractice() {
-  const [sel, setSel] = useState<string>(TEXTS[0].id);
-  const current = TEXTS.find((t) => t.id === sel) ?? TEXTS[0];
-  const text = current.text;
+  const [kind, setKind] = useState<string>("prose");
+  const [textId, setTextId] = useState<string>(TEXTS[0].id);
+  const current = TEXTS.find((t) => t.id === textId) ?? TEXTS[0];
+  const target = current.text;
+  const kindTexts = TEXTS.filter((t) => t.kind === kind);
 
-  const [typed, setTyped] = useState("");
-  const [events, setEvents] = useState<KeyStroke[]>([]);
-  const [mistakes, setMistakes] = useState(0);
+  const [typed, setTypedState] = useState("");
+  const typedRef = useRef("");
+  const historyRef = useRef<{ t: number; ok: boolean }[]>([]);
   const [startedAt, setStartedAt] = useState<number | null>(null);
-  const [doneAt, setDoneAt] = useState<number | null>(null);
-  const [now, setNow] = useState(() => Date.now());
-
+  const startedAtRef = useRef<number | null>(null);
+  const [endedAt, setEndedAt] = useState<number | null>(null);
+  const endedAtRef = useRef<number | null>(null);
+  const [now, setNow] = useState(Date.now());
+  const [focused, setFocused] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const boxRef = useRef<HTMLDivElement>(null);
 
-  const done = doneAt !== null;
-  const pos = typed.length;
+  const setTyped = (v: string) => {
+    typedRef.current = v;
+    setTypedState(v);
+  };
 
   useEffect(() => {
-    if (startedAt === null || done) return undefined;
-    const id = setInterval(() => setNow(Date.now()), 200);
-    return () => clearInterval(id);
-  }, [startedAt, done]);
+    const id = "jb-mono-link";
+    if (!document.getElementById(id)) {
+      const l = document.createElement("link");
+      l.id = id;
+      l.rel = "stylesheet";
+      l.href =
+        "https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap";
+      document.head.appendChild(l);
+    }
+  }, []);
 
-  // Keep the caret line inside the scrollable text box, centring it when it leaves the visible band.
   useEffect(() => {
-    const box = boxRef.current;
-    if (!box) return;
-    const el = box.querySelector<HTMLElement>(`[data-i="${pos}"]`);
-    if (!el) return;
-    const top = el.offsetTop;
-    const bottom = top + el.offsetHeight;
-    if (top < box.scrollTop + 8 || bottom > box.scrollTop + box.clientHeight - 8) {
-      box.scrollTop = Math.max(0, top - box.clientHeight / 2);
+    if (startedAt && !endedAt) {
+      const iv = setInterval(() => setNow(Date.now()), 250);
+      return () => clearInterval(iv);
     }
-  }, [pos]);
+  }, [startedAt, endedAt]);
 
-  const errChars = useMemo(() => {
-    let n = 0;
-    for (let i = 0; i < pos; i += 1) {
-      if (typed[i] !== text[i]) n += 1;
-    }
-    return n;
-  }, [typed, text, pos]);
-
-  const endAt = doneAt ?? now;
-  const elapsedMs = startedAt === null ? 0 : endAt - startedAt;
-  const correctNet = pos - errChars;
-  const overallCPM = elapsedMs > 0 ? (correctNet / elapsedMs) * 60000 : 0;
-  const progress = text.length > 0 ? pos / text.length : 0;
-
-  const currentCPM = useMemo(() => {
-    if (startedAt === null) return 0;
-    const winStart = Math.max(startedAt, endAt - WINDOW_MS);
-    let ok = 0;
-    for (const e of events) {
-      if (e.t >= winStart && e.t <= endAt && e.ok) ok += 1;
-    }
-    const spanMs = Math.max(endAt - winStart, 500);
-    return (ok / spanMs) * 60000;
-  }, [events, startedAt, endAt]);
-
-  const accuracy =
-    events.length > 0 ? ((events.length - mistakes) / events.length) * 100 : 100;
-
-  const reset = (id?: string) => {
-    if (id !== undefined) setSel(id);
-    setTyped("");
-    setEvents([]);
-    setMistakes(0);
+  const resetAll = useCallback(() => {
+    typedRef.current = "";
+    setTypedState("");
+    historyRef.current = [];
+    startedAtRef.current = null;
     setStartedAt(null);
-    setDoneAt(null);
+    endedAtRef.current = null;
+    setEndedAt(null);
     setNow(Date.now());
     requestAnimationFrame(() => {
-      inputRef.current?.focus();
+      if (inputRef.current) inputRef.current.focus();
     });
+  }, []);
+
+  const selectText = (id: string) => {
+    setTextId(id);
+    resetAll();
   };
 
-  const onChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
-    if (done) {
-      e.target.value = typed;
-      return;
-    }
-    let v = e.target.value;
-    if (v.length < typed.length) {
-      setTyped(v);
-      return;
-    }
-    v = v.slice(0, text.length);
-    const added = v.slice(typed.length);
-    if (added.length === 0) return;
+  const selectKind = (k: string) => {
+    setKind(k);
+    const first = TEXTS.find((t) => t.kind === k);
+    if (first) selectText(first.id);
+  };
+
+  const nextText = () => {
+    const idx = kindTexts.findIndex((t) => t.id === textId);
+    const next = kindTexts[(idx + 1) % kindTexts.length];
+    if (next) selectText(next.id);
+  };
+
+  const addChar = (ch: string) => {
+    if (endedAtRef.current) return;
+    const cur = typedRef.current;
+    if (cur.length >= target.length) return;
     const t = Date.now();
-    if (startedAt === null) setStartedAt(t);
-    setNow(t);
-    const strokes: KeyStroke[] = [];
-    let m = 0;
-    for (let i = 0; i < added.length; i += 1) {
-      const ok = added[i] === text[typed.length + i];
-      if (!ok) m += 1;
-      strokes.push({ t, ok });
+    if (!startedAtRef.current) {
+      startedAtRef.current = t;
+      setStartedAt(t);
+      setNow(t);
     }
-    setEvents((prev) => [...prev, ...strokes]);
-    setMistakes((prev) => prev + m);
-    setTyped(v);
-    if (v.length === text.length) setDoneAt(t);
+    const ok = target[cur.length] === ch;
+    historyRef.current.push({ t, ok });
+    const next = cur + ch;
+    setTyped(next);
+    if (next.length >= target.length) {
+      endedAtRef.current = Date.now();
+      setEndedAt(endedAtRef.current);
+    }
   };
 
-  const chars: ReactNode[] = [];
-  for (let i = 0; i < text.length; i += 1) {
-    let cls = "ch";
-    if (i < pos) cls = typed[i] === text[i] ? "ch ok" : "ch err";
-    if (i === pos && !done) cls += " cur";
-    chars.push(
-      <span key={i} data-i={i} className={cls}>
-        {text[i]}
+  const onKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Tab") {
+      e.preventDefault();
+      resetAll();
+      return;
+    }
+    if (e.key === "Escape") {
+      e.preventDefault();
+      resetAll();
+      return;
+    }
+    if (endedAtRef.current) return;
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.key === "Backspace") {
+      e.preventDefault();
+      setTyped(typedRef.current.slice(0, -1));
+      return;
+    }
+    if (e.key === "Enter") {
+      e.preventDefault();
+      addChar("\n");
+      return;
+    }
+    if (e.key.length === 1) {
+      e.preventDefault();
+      addChar(e.key);
+    }
+  };
+
+  // ---- derived stats ----
+  const elapsed = startedAt ? (endedAt ?? now) - startedAt : 0;
+  let correctChars = 0;
+  for (let i = 0; i < typed.length; i++) {
+    if (typed[i] === target[i]) correctChars++;
+  }
+  const keystrokes = historyRef.current.length;
+  const oks = historyRef.current.reduce((a, h) => a + (h.ok ? 1 : 0), 0);
+  const errors = keystrokes - oks;
+  const accuracy = keystrokes > 0 ? Math.round((oks / keystrokes) * 100) : null;
+  const overallCpm =
+    elapsed > 800 ? Math.round(correctChars / (elapsed / 60000)) : null;
+  let currentCpm: number | null = null;
+  if (elapsed > 1500) {
+    const win = Math.min(10000, Math.max(3000, elapsed));
+    const since = (endedAt ?? now) - win;
+    const recent = historyRef.current.filter((h) => h.t >= since && h.ok).length;
+    currentCpm = Math.round(recent * (60000 / win));
+  }
+  const progress = Math.round((typed.length / target.length) * 100);
+  const seconds = (elapsed / 1000).toFixed(1);
+  const isCode = current.kind === "code";
+
+  // ---- char spans ----
+  const spans: ReactNode[] = [];
+  for (let i = 0; i < target.length; i++) {
+    const ch = target[i];
+    let style: CSSProperties;
+    let cls = "";
+    if (i < typed.length) {
+      if (typed[i] === ch) {
+        style = { color: C.ok };
+      } else {
+        style = {
+          color: C.err,
+          background: "rgba(255,95,86,0.14)",
+          borderRadius: 2,
+        };
+      }
+    } else if (i === typed.length && !endedAt) {
+      cls = "tt-cur";
+      style = { color: "#f2f4f7" };
+    } else {
+      style = { color: C.untyped };
+    }
+    spans.push(
+      <span key={i} className={cls} style={style}>
+        {ch === "\n" ? "↵\n" : ch}
       </span>
     );
   }
-  if (pos === text.length) {
-    chars.push(<span key="end" data-i={pos} className={done ? "ch" : "ch cur"} />);
-  }
 
   return (
-    <div className="app">
-      <header className="top">
-        <div className="brand">
-          <span className="dot" />
-          mistral · typing
-        </div>
-        <button type="button" className="ghost" onClick={() => reset()}>
-          ↻ restart
-        </button>
-      </header>
+    <div
+      className="tt-app select-none flex flex-col items-center justify-center"
+      style={{
+        fontFamily: FONT,
+        background: C.bg,
+        minHeight: "100vh",
+        width: "100%",
+        color: "#e8eaed",
+        padding: "24px 16px",
+      }}
+    >
+      <style>{`
+        @keyframes tt-pulse {
+          0%, 100% { background: rgba(255,112,0,0.24); }
+          50% { background: rgba(255,112,0,0.08); }
+        }
+        .tt-cur {
+          background: rgba(255,112,0,0.24);
+          border-bottom: 2px solid #ff7000;
+          animation: tt-pulse 1.2s ease-in-out infinite;
+          border-radius: 2px;
+        }
+        .tt-app ::selection { background: transparent; }
+        .tt-app button { cursor: pointer; }
+      `}</style>
 
-      <nav className="picker">
-        {TEXTS.map((t) => (
-          <button
-            type="button"
-            key={t.id}
-            className={t.id === sel ? "chip active" : "chip"}
-            onClick={() => reset(t.id)}
+      <div className="w-full" style={{ maxWidth: 780 }}>
+        {/* header */}
+        <div className="flex items-center justify-between" style={{ marginBottom: 18 }}>
+          <div
+            style={{
+              fontSize: 12,
+              letterSpacing: 3,
+              textTransform: "uppercase",
+              color: C.muted,
+            }}
           >
-            <span className={"kind " + t.kind}>{t.kind}</span>
-            {t.title}
-            <span className="meta">{t.text.length} ch</span>
-          </button>
-        ))}
-      </nav>
+            typist
+          </div>
+          <div className="flex" style={{ gap: 18 }}>
+            {KINDS.map((k) => (
+              <button
+                key={k.id}
+                onClick={() => selectKind(k.id)}
+                style={{
+                  fontFamily: FONT,
+                  fontSize: 12,
+                  letterSpacing: 1.5,
+                  textTransform: "uppercase",
+                  color: kind === k.id ? C.accent : C.muted,
+                  background: "none",
+                  border: "none",
+                  paddingBottom: 2,
+                  borderBottom: kind === k.id ? "1px solid " + C.accent : "1px solid transparent",
+                }}
+              >
+                {k.label}
+              </button>
+            ))}
+          </div>
+        </div>
 
-      <div className="stats">
-        <div className="stat">
-          <div className="v accent">{startedAt === null ? "–" : Math.round(currentCPM)}</div>
-          <div className="l">cpm · now</div>
+        {/* text chips */}
+        <div className="flex flex-wrap" style={{ gap: 8, marginBottom: 22 }}>
+          {kindTexts.map((t) => {
+            const active = t.id === textId;
+            return (
+              <button
+                key={t.id}
+                onClick={() => selectText(t.id)}
+                style={{
+                  fontFamily: FONT,
+                  fontSize: 12,
+                  padding: "5px 12px",
+                  borderRadius: 999,
+                  color: active ? C.accent : "#9aa1ab",
+                  border: "1px solid " + (active ? C.accent : C.border),
+                  background: active ? "rgba(255,112,0,0.08)" : "transparent",
+                  transition: "all .15s ease",
+                }}
+              >
+                {t.title}
+              </button>
+            );
+          })}
         </div>
-        <div className="stat">
-          <div className="v">{startedAt === null ? "–" : Math.round(overallCPM)}</div>
-          <div className="l">cpm · avg</div>
-        </div>
-        <div className="stat">
-          <div className="v">{events.length > 0 ? `${accuracy.toFixed(1)}%` : "–"}</div>
-          <div className="l">accuracy</div>
-        </div>
-        <div className="stat">
-          <div className="v">{mistakes}</div>
-          <div className="l">errors</div>
-        </div>
-        <div className="stat">
-          <div className="v">{startedAt === null ? "–" : formatTime(elapsedMs)}</div>
-          <div className="l">time</div>
-        </div>
-        <div className="stat">
-          <div className="v">{Math.round(progress * 100)}%</div>
-          <div className="l">progress</div>
-        </div>
-      </div>
 
-      <div className="bar">
-        <div className="fill" style={{ width: `${progress * 100}%` }} />
-      </div>
+        {/* card */}
+        <div
+          className="relative"
+          style={{
+            background: C.card,
+            border: "1px solid " + C.border,
+            borderRadius: 12,
+            overflow: "hidden",
+          }}
+          onMouseDown={(e) => {
+            e.preventDefault();
+            inputRef.current && inputRef.current.focus();
+          }}
+        >
+          {/* progress bar */}
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              height: 2,
+              width: progress + "%",
+              background: C.accent,
+              transition: "width .12s ease",
+              zIndex: 2,
+            }}
+          />
 
-      <section className="card" onClick={() => inputRef.current?.focus()}>
-        <div className="textwrap" ref={boxRef}>
-          <div className="text">{chars}</div>
-        </div>
-        <textarea
-          ref={inputRef}
-          className="input"
-          value={typed}
-          onChange={onChange}
-          autoCapitalize="off"
-          autoCorrect="off"
-          autoComplete="off"
-          spellCheck={false}
-          aria-label="Type the text"
-        />
-      </section>
+          {/* meta row */}
+          <div
+            className="flex items-center justify-between"
+            style={{ padding: "14px 28px 0" }}
+          >
+            <div style={{ fontSize: 11, color: C.muted }}>
+              {current.source} · {target.length} chars
+            </div>
+            <div style={{ fontSize: 11, color: C.muted }}>{progress}%</div>
+          </div>
 
-      <div className="source">{current.source}</div>
-
-      {done && (
-        <div className="done">
-          <div>
-            <div className="done-title">Finished</div>
-            <div className="done-sub">
-              {formatTime(elapsedMs)} · {Math.round(overallCPM)} cpm avg ·{" "}
-              {accuracy.toFixed(1)}% accuracy · {mistakes}{" "}
-              {mistakes === 1 ? "error" : "errors"}
+          {/* text */}
+          <div style={{ padding: "20px 28px 8px" }}>
+            <div
+              style={{
+                fontSize: isCode ? 16 : 20,
+                lineHeight: isCode ? 1.9 : 2,
+                whiteSpace: "pre-wrap",
+                wordBreak: isCode ? "break-word" : "normal",
+                minHeight: isCode ? 240 : 140,
+              }}
+            >
+              {spans}
             </div>
           </div>
-          <button type="button" className="primary" onClick={() => reset()}>
-            ↻ type again
-          </button>
-        </div>
-      )}
 
-      <footer className="hint">
-        click the text and start typing — backspace fixes mistakes
-      </footer>
+          {/* stats row */}
+          <div
+            className="flex items-center justify-center flex-wrap"
+            style={{
+              gap: 36,
+              padding: "18px 28px 22px",
+              borderTop: "1px solid " + C.border,
+              marginTop: 12,
+            }}
+          >
+            <Stat label="cpm now" value={currentCpm ?? "—"} accent />
+            <Stat label="cpm avg" value={overallCpm ?? "—"} />
+            <Stat label="accuracy" value={accuracy === null ? "—" : accuracy + "%"} />
+            <Stat label="errors" value={keystrokes === 0 ? "—" : errors} />
+            <Stat label="time" value={elapsed ? seconds + "s" : "—"} />
+          </div>
+
+          {/* hidden input */}
+          <textarea
+            ref={inputRef}
+            autoFocus
+            spellCheck={false}
+            autoCapitalize="off"
+            autoCorrect="off"
+            value=""
+            onChange={() => {}}
+            onKeyDown={onKeyDown}
+            onFocus={() => setFocused(true)}
+            onBlur={() => setFocused(false)}
+            style={{
+              position: "absolute",
+              opacity: 0,
+              width: 1,
+              height: 1,
+              top: 0,
+              left: 0,
+              border: "none",
+              resize: "none",
+              outline: "none",
+            }}
+          />
+
+          {/* click-to-focus overlay */}
+          {!focused && !endedAt && (
+            <div
+              className="absolute inset-0 flex items-center justify-center"
+              style={{
+                background: "rgba(13,15,18,0.72)",
+                borderRadius: 12,
+                zIndex: 3,
+              }}
+            >
+              <div style={{ fontSize: 12, letterSpacing: 2, color: C.muted, textTransform: "uppercase" }}>
+                click to focus · start typing
+              </div>
+            </div>
+          )}
+
+          {/* results overlay */}
+          {endedAt && (
+            <div
+              className="absolute inset-0 flex flex-col items-center justify-center"
+              style={{
+                background: "rgba(13,15,18,0.93)",
+                borderRadius: 12,
+                zIndex: 4,
+                gap: 14,
+                padding: 20,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 10,
+                  letterSpacing: 3,
+                  textTransform: "uppercase",
+                  color: C.muted,
+                }}
+              >
+                complete · {current.title}
+              </div>
+              <div style={{ fontSize: 52, fontWeight: 700, color: C.accent, lineHeight: 1 }}>
+                {overallCpm}
+                <span style={{ fontSize: 14, fontWeight: 400, color: C.muted }}> cpm</span>
+              </div>
+              <div className="flex" style={{ gap: 28, marginTop: 2 }}>
+                <Stat label="accuracy" value={accuracy + "%"} />
+                <Stat label="errors" value={errors} />
+                <Stat label="time" value={seconds + "s"} />
+              </div>
+              <div className="flex" style={{ gap: 10, marginTop: 12 }}>
+                <button
+                  onClick={resetAll}
+                  style={{
+                    fontFamily: FONT,
+                    fontSize: 12,
+                    padding: "8px 16px",
+                    borderRadius: 8,
+                    color: "#e8eaed",
+                    border: "1px solid " + C.border,
+                    background: "transparent",
+                  }}
+                >
+                  Retry (Tab)
+                </button>
+                <button
+                  onClick={nextText}
+                  style={{
+                    fontFamily: FONT,
+                    fontSize: 12,
+                    padding: "8px 16px",
+                    borderRadius: 8,
+                    color: "#0d0f12",
+                    border: "1px solid " + C.accent,
+                    background: C.accent,
+                  }}
+                >
+                  Next text →
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* footer hint */}
+        <div
+          className="flex items-center justify-center"
+          style={{ marginTop: 14, gap: 16, fontSize: 10, color: C.muted, letterSpacing: 1 }}
+        >
+          <span>tab — restart</span>
+          <span>·</span>
+          <span>esc — reset</span>
+          <span>·</span>
+          <span>enter types ↵ in code</span>
+        </div>
+      </div>
     </div>
   );
 }
