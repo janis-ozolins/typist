@@ -5,7 +5,7 @@ single page at `/`.
 
 ## Features
 
-- 9 preset texts split into Prose and Code tabs: famous book openings (Dickens, Austen, Orwell, Melville, Carroll) and code snippets (FizzBuzz, quicksort, binary search, debounce)
+- 15 preset texts split into Prose, Code and Quotes tabs: famous book openings (Dickens, Austen, Orwell, Melville, Carroll), witty one-liners (Wilde, Wright, Marx, Hedberg, Parker, Twain) and code snippets (FizzBuzz, quicksort, binary search, debounce)
 - Per-character visualization on the text: dim = not typed yet, grey = typed correctly, red = mistake, pulsing orange caret = current position, plus a progress bar on top of the text card
 - Live stats: current CPM (rolling window), overall CPM, accuracy, error count, elapsed time
 - Completion overlay with avg CPM / accuracy / errors / time, plus retry and next-text buttons

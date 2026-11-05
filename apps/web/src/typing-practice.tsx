@@ -5,7 +5,7 @@ const FONT = "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, m
 
 interface PracticeText {
   readonly id: string;
-  readonly kind: "prose" | "code";
+  readonly kind: "prose" | "code" | "quotes";
   readonly title: string;
   readonly source: string;
   readonly text: string;
@@ -46,6 +46,48 @@ const TEXTS = [
     title: "Jabberwocky",
     source: "Lewis Carroll, 1871",
     text: "'Twas brillig, and the slithy toves did gyre and gimble in the wabe: all mimsy were the borogoves, and the mome raths outgrabe.",
+  },
+  {
+    id: "wilde",
+    kind: "quotes",
+    title: "Wilde",
+    source: "Oscar Wilde",
+    text: "I can resist everything except temptation.",
+  },
+  {
+    id: "wright",
+    kind: "quotes",
+    title: "Wright",
+    source: "Steven Wright",
+    text: "I intend to live forever. So far, so good.",
+  },
+  {
+    id: "marx",
+    kind: "quotes",
+    title: "Marx",
+    source: "Groucho Marx",
+    text: "Outside of a dog, a book is a man's best friend. Inside of a dog, it's too dark to read.",
+  },
+  {
+    id: "hedberg",
+    kind: "quotes",
+    title: "Hedberg",
+    source: "Mitch Hedberg",
+    text: "I used to do drugs. I still do, but I used to, too.",
+  },
+  {
+    id: "parker",
+    kind: "quotes",
+    title: "Parker",
+    source: "Dorothy Parker",
+    text: "You can lead a horticulture, but you can't make her think.",
+  },
+  {
+    id: "twain",
+    kind: "quotes",
+    title: "Twain",
+    source: "Mark Twain",
+    text: "I have never let my schooling interfere with my education.",
   },
   {
     id: "fizzbuzz",
@@ -112,6 +154,7 @@ const TEXTS = [
 const KINDS = [
   { id: "prose", label: "Prose" },
   { id: "code", label: "Code" },
+  { id: "quotes", label: "Quotes" },
 ] as const;
 
 const C = {
