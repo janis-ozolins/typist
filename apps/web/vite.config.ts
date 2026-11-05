@@ -70,7 +70,9 @@ export default defineConfig(async ({ mode }) => ({
   },
   plugins: [
     tailwindcss(),
-    tanstackStart(),
+    // Prerender `/` to static HTML in .output/public: the page holds no server
+    // state, so requests get a static file instead of an SSR round trip.
+    tanstackStart({ prerender: { enabled: true, crawlLinks: true } }),
     nitro(),
     viteReact(),
     ...(await contributedPlugins()),
