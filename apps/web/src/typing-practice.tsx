@@ -660,8 +660,6 @@ export function TypingPractice() {
         >
           <span>esc — restart</span>
           <span>·</span>
-          <span>tab types ⇥ in code</span>
-          <span>·</span>
           <span>enter types ↵ in code</span>
         </div>
       </div>
