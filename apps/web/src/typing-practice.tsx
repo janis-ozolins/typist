@@ -221,10 +221,9 @@ export function TypingPractice() {
     };
   }, [focusInput]);
 
-  // The font stylesheet is discovered at HTML parse time via the head() links,
-  // which start the fetch in parallel with the JS bundle instead of waiting for
-  // hydration; see PR perf/font-in-head for the measured numbers.
-
+  // The font is self-hosted (imported in routes/__root.tsx) and preloaded
+  // from the document head, so it is fetched in parallel with the JS bundle;
+  // see PR perf/font-selfhost for the measured numbers.
   useEffect(() => {
     if (startedAt && !endedAt) {
       const iv = setInterval(() => setNow(Date.now()), 250);
