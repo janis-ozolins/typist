@@ -1,4 +1,3 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createRouter } from "@tanstack/react-router";
 
 import { resolveAppName } from "./app-name";
@@ -10,12 +9,7 @@ import { scrollRestorationOptions } from "./scroll-root";
 
 // Called once per request on the server and once in the browser, so each gets its own cache.
 export const getRouter = () => {
-  const queryClient = new QueryClient({
-    defaultOptions: { queries: { staleTime: 60_000 } },
-  });
-
   const context: RouterContext = {
-    queryClient,
     landingPath: (): string | undefined =>
       // oxlint-disable-next-line no-use-before-define -- called only once the router exists, to pick where `/` goes
       landingPath(router, landingFallbacks),
@@ -33,9 +27,6 @@ export const getRouter = () => {
     },
     ...scrollRestorationOptions,
     defaultNotFoundComponent: () => <p className="p-8">Not found.</p>,
-    Wrap: ({ children }) => (
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-    ),
   });
 
   return router;
