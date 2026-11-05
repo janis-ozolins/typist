@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>typist — storyline UI draft</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0d0f12; --card: #13161b; --border: #23272f;
+    --untyped: #c9ced6; --ok: #5f6672; --err: #ff5f56;
+    --accent: #ff7000; --muted: #6b7280; --text: #e8eaed;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    padding: 32px 16px 64px;
+  }
+  .shot { max-width: 780px; margin: 0 auto 56px; }
+  .shot > h2 {
+    font-size: 12px; font-weight: 400; letter-spacing: 1.5px; color: var(--muted);
+    text-transform: uppercase; margin: 0 0 12px 16px;
+  }
+  .tt-app { user-select: none; }
+  .tt-app button { cursor: pointer; font-family: inherit; }
+  @keyframes tt-pulse {
+    0%, 100% { background: rgba(255,112,0,0.24); }
+    50% { background: rgba(255,112,0,0.08); }
+  }
+  .tt-cur {
+    background: rgba(255,112,0,0.24);
+    border-bottom: 2px solid var(--accent);
+    animation: tt-pulse 1.2s ease-in-out infinite;
+    border-radius: 2px;
+  }
+</style>
+</head>
+<body>
+
+<!-- Shared snippet: storyline rail (goes between the text chips and the card in typing-practice.tsx) -->
+<!--
+  const entries = story.books[current.id] ?? [];
+  const total = Math.min(current.excerpts.length, MAX_EXCERPTS);
+  const doneCount = entries.length;
+-->
+
+<!-- ============ STATE A · typing chapter 3 of 10 ============ -->
+<div class="shot">
+  <h2>A · typing chapter 3 of 10</h2>
+  <div class="tt-app" style="background:var(--bg); border:1px solid #1c2027; border-radius:16px; padding:24px 16px;">
+    <div style="max-width:780px; margin:0 auto;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;">
+        <div style="font-size:12px; letter-spacing:3px; text-transform:uppercase; color:var(--muted);">typist</div>
+        <div style="display:flex; gap:18px;">
+          <button style="font-size:12px; letter-spacing:1.5px; text-transform:uppercase; color:var(--accent); background:none; border:none; padding-bottom:2px; border-bottom:1px solid var(--accent);">Prose</button>
+          <button style="font-size:12px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); background:none; border:none; padding-bottom:2px; border-bottom:1px solid transparent;">Code</button>
+        </div>
+      </div>
+
+      <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px;">
+        <button style="font-size:12px; padding:5px 12px; border-radius:999px; color:var(--accent); border:1px solid var(--accent); background:rgba(255,112,0,0.08);">A Tale of Two Cities</button>
+        <button style="font-size:12px; padding:5px 12px; border-radius:999px; color:#9aa1ab; border:1px solid var(--border); background:transparent;">Pride and Prejudice</button>
+        <button style="font-size:12px; padding:5px 12px; border-radius:999px; color:#9aa1ab; border:1px solid var(--border); background:transparent;">Nineteen Eighty-Four</button>
+        <button style="font-size:12px; padding:5px 12px; border-radius:999px; color:#9aa1ab; border:1px solid var(--border); background:transparent;">Moby-Dick</button>
+        <button style="font-size:12px; padding:5px 12px; border-radius:999px; color:#9aa1ab; border:1px solid var(--border); background:transparent;">Jabberwocky</button>
+      </div>
+
+      <!-- storyline rail -->
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; padding:0 2px;">
+        <div style="font-size:10px; letter-spacing:1.6px; text-transform:uppercase; color:var(--muted);">storyline · a tale of two cities</div>
+        <div style="display:flex; align-items:center; gap:14px;">
+          <div style="display:flex; gap:6px;">
+            <span title="chapter 1 · 198 cpm · 99%" style="width:10px; height:10px; border-radius:50%; background:var(--accent);"></span>
+            <span title="chapter 2 · 221 cpm · 98%" style="width:10px; height:10px; border-radius:50%; background:var(--accent);"></span>
+            <span title="chapter 3 · 212 cpm · 97%" style="width:10px; height:10px; border-radius:50%; background:var(--accent);"></span>
+            <span style="width:10px; height:10px; border-radius:50%; background:rgba(255,112,0,0.24); border:1px solid var(--accent);"></span>
+            <span style="width:10px; height:10px; border-radius:50%; border:1px solid var(--border);"></span>
+            <span style="width:10px; height:10px; border-radius:50%; border:1px solid var(--border);"></span>
+            <span style="width:10px; height:10px; border-radius:50%; border:1px solid var(--border);"></span>
+            <span style="width:10px; height:10px; border-radius:50%; border:1px solid var(--border);"></span>
+            <span style="width:10px; height:10px; border-radius:50%; border:1px solid var(--border);"></span>
+            <span style="width:10px; height:10px; border-radius:50%; border:1px solid var(--border);"></span>
+          </div>
+          <span style="font-size:11px; color:var(--muted);">3/10</span>
+        </div>
+      </div>
+
+      <div style="position:relative; background:var(--card); border:1px solid var(--border); border-radius:12px; overflow:hidden;">
+        <div style="position:absolute; top:0; left:0; height:2px; width:35%; background:var(--accent);"></div>
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 28px 0;">
+          <div style="font-size:11px; color:var(--muted);">Charles Dickens, 1859 · 148 chars · chapter 3</div>
+          <div style="font-size:11px; color:var(--muted);">35%</div>
+        </div>
+        <div style="padding:20px 28px 8px;">
+          <div style="font-size:20px; line-height:2; white-space:pre-wrap;">
+            <span style="color:var(--ok);">It was the best of times, it was the worst of tim</span><span style="color:var(--err); background:rgba(255,95,86,0.14); border-radius:2px;">e</span><span class="tt-cur">s</span><span style="color:var(--untyped);"> was the age of wisdom, it was the age of foolishness, it was the epoch of belief, it was the epoch of incredulity, it was the season of Light, it was the season of Darkness, it was the spring of hope, it was the winter of despair.</span>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; justify-content:center; gap:36px; padding:18px 28px 22px; border-top:1px solid var(--border); margin-top:12px;">
+          <div style="display:flex; flex-direction:column; align-items:center;"><div style="font-size:22px; font-weight:600; color:var(--accent);">187</div><div style="font-size:9px; letter-spacing:1.6px; color:var(--muted); margin-top:5px;">CPM NOW</div></div>
+          <div style="display:flex; flex-direction:column; align-items:center;"><div style="font-size:22px; font-weight:600;">164</div><div style="font-size:9px; letter-spacing:1.6px; color:var(--muted); margin-top:5px;">CPM AVG</div></div>
+          <div style="display:flex; flex-direction:column; align-items:center;"><div style="font-size:22px; font-weight:600;">97%</div><div style="font-size:9px; letter-spacing:1.6px; color:var(--muted); margin-top:5px;">ACCURACY</div></div>
+          <div style="display:flex; flex-direction:column; align-items:center;"><div style="font-size:22px; font-weight:600;">4</div><div style="font-size:9px; letter-spacing:1.6px; color:var(--muted); margin-top:5px;">ERRORS</div></div>
+          <div style="display:flex; flex-direction:column; align-items:center;"><div style="font-size:22px; font-weight:600;">12.4s</div><div style="font-size:9px; letter-spacing:1.6px; color:var(--muted); margin-top:5px;">TIME</div></div>
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:center; gap:16px; margin-top:14px; font-size:10px; color:var(--muted); letter-spacing:1px;">
+        <span>tab — restart</span><span>·</span><span>esc — reset</span><span>·</span><span>enter types ⏎ in code</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ STATE B · chapter complete overlay ============ -->
+<div class="shot">
+  <h2>B · chapter complete — next chapter unlocked</h2>
+  <div class="tt-app" style="background:var(--bg); border:1px solid #1c2027; border-radius:16px; padding:24px 16px;">
+    <div style="max-width:780px; margin:0 auto;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;">
+        <div style="font-size:12px; letter-spacing:3px; text-transform:uppercase; color:var(--muted);">typist</div>
+        <div style="display:flex; gap:18px;">
+          <button style="font-size:12px; letter-spacing:1.5px; text-transform:uppercase; color:var(--accent); background:none; border:none; padding-bottom:2px; border-bottom:1px solid var(--accent);">Prose</button>
+          <button style="font-size:12px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); background:none; border:none; padding-bottom:2px; border-bottom:1px solid transparent;">Code</button>
+        </div>
+      </div>
+      <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px;">
+        <button style="font-size:12px; padding:5px 12px; border-radius:999px; color:var(--accent); border:1px solid var(--accent); background:rgba(255,112,0,0.08);">A Tale of Two Cities</button>
+        <button style="font-size:12px; padding:5px 12px; border-radius:999px; color:#9aa1ab; border:1px solid var(--border); background:transparent;">Pride and Prejudice</button>
+      </div>
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; padding:0 2px;">
+        <div style="font-size:10px; letter-spacing:1.6px; text-transform:uppercase; color:var(--muted);">storyline · a tale of two cities</div>
+        <div style="display:flex; align-items:center; gap:14px;">
+          <div style="display:flex; gap:6px;">
+            <span style="width:10px; height:10px; border-radius:50%; background:var(--accent);"></span>
+            <span style="width:10px; height:10px; border-radius:50%; background:var(--accent);"></span>
+            <span style="width:10px; height:10px; border-radius:50%; background:var(--accent);"></span>
+            <span style="width:10px; height:10px; border-radius:50%; background:rgba(255,112,0,0.24); border:1px solid var(--accent);"></span>
+            <span style="width:10px; height:10px; border-radius:50%; border:1px solid var(--border);"></span>
+            <span style="width:10px; height:10px; border-radius:50%; border:1px solid var(--border);"></span>
+            <span style="width:10px; height:10px; border-radius:50%; border:1px solid var(--border);"></span>
+            <span style="width:10px; height:10px; border-radius:50%; border:1px solid var(--border);"></span>
+            <span style="width:10px; height:10px; border-radius:50%; border:1px solid var(--border);"></span>
+            <span style="width:10px; height:10px; border-radius:50%; border:1px solid var(--border);"></span>
+          </div>
+          <span style="font-size:11px; color:var(--muted);">3/10</span>
+        </div>
+      </div>
+      <div style="position:relative; background:var(--card); border:1px solid var(--border); border-radius:12px; overflow:hidden;">
+        <div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; background:rgba(13,15,18,0.93); z-index:4; padding:20px;">
+          <div style="font-size:10px; letter-spacing:3px; text-transform:uppercase; color:var(--muted);">complete · chapter 3 of 10 · a tale of two cities</div>
+          <div style="font-size:52px; font-weight:700; color:var(--accent); line-height:1;">212<span style="font-size:14px; font-weight:400; color:var(--muted);"> cpm</span></div>
+          <div style="display:flex; gap:28px; margin-top:2px;">
+            <div style="display:flex; flex-direction:column; align-items:center;"><div style="font-size:22px; font-weight:600;">97%</div><div style="font-size:9px; letter-spacing:1.6px; color:var(--muted); margin-top:5px;">ACCURACY</div></div>
+            <div style="display:flex; flex-direction:column; align-items:center;"><div style="font-size:22px; font-weight:600;">4</div><div style="font-size:9px; letter-spacing:1.6px; color:var(--muted); margin-top:5px;">ERRORS</div></div>
+            <div style="display:flex; flex-direction:column; align-items:center;"><div style="font-size:22px; font-weight:600;">12.4s</div><div style="font-size:9px; letter-spacing:1.6px; color:var(--muted); margin-top:5px;">TIME</div></div>
+          </div>
+          <div style="display:flex; gap:10px; margin-top:12px;">
+            <button style="font-size:12px; padding:8px 16px; border-radius:8px; color:var(--text); border:1px solid var(--border); background:transparent;">Retry (Tab)</button>
+            <button style="font-size:12px; padding:8px 16px; border-radius:8px; color:#0d0f12; border:1px solid var(--accent); background:var(--accent);">Next chapter →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ STATE C · book complete, storyline 10/10 ============ -->
+<div class="shot">
+  <h2>C · book complete — storyline 10/10</h2>
+  <div class="tt-app" style="background:var(--bg); border:1px solid #1c2027; border-radius:16px; padding:24px 16px;">
+    <div style="max-width:780px; margin:0 auto;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;">
+        <div style="font-size:12px; letter-spacing:3px; text-transform:uppercase; color:var(--muted);">typist</div>
+        <div style="display:flex; gap:18px;">
+          <button style="font-size:12px; letter-spacing:1.5px; text-transform:uppercase; color:var(--accent); background:none; border:none; padding-bottom:2px; border-bottom:1px solid var(--accent);">Prose</button>
+          <button style="font-size:12px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); background:none; border:none; padding-bottom:2px; border-bottom:1px solid transparent;">Code</button>
+        </div>
+      </div>
+      <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px;">
+        <button style="font-size:12px; padding:5px 12px; border-radius:999px; color:var(--accent); border:1px solid var(--accent); background:rgba(255,112,0,0.08);">A Tale of Two Cities · 10/10</button>
+        <button style="font-size:12px; padding:5px 12px; border-radius:999px; color:#9aa1ab; border:1px solid var(--border); background:transparent;">Pride and Prejudice</button>
+      </div>
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; padding:0 2px;">
+        <div style="font-size:10px; letter-spacing:1.6px; text-transform:uppercase; color:var(--muted);">storyline · a tale of two cities</div>
+        <div style="display:flex; align-items:center; gap:14px;">
+          <div style="display:flex; gap:6px;">
+            <span style="width:10px; height:10px; border-radius:50%; background:var(--accent);"></span>
+            <span style="width:10px; height:10px; border-radius:50%; background:var(--accent);"></span>
+            <span style="width:10px; height:10px; border-radius:50%; background:var(--accent);"></span>
+            <span style="width:10px; height:10px; border-radius:50%; background:var(--accent);"></span>
+            <span style="width:10px; height:10px; border-radius:50%; background:var(--accent);"></span>
+            <span style="width:10px; height:10px; border-radius:50%; background:var(--accent);"></span>
+            <span style="width:10px; height:10px; border-radius:50%; background:var(--accent);"></span>
+            <span style="width:10px; height:10px; border-radius:50%; background:var(--accent);"></span>
+            <span style="width:10px; height:10px; border-radius:50%; background:var(--accent);"></span>
+            <span style="width:10px; height:10px; border-radius:50%; background:var(--accent);"></span>
+          </div>
+          <span style="font-size:11px; color:var(--accent);">10/10</span>
+        </div>
+      </div>
+      <div style="position:relative; background:var(--card); border:1px solid var(--border); border-radius:12px; overflow:hidden;">
+        <div style="position:absolute; top:0; left:0; height:2px; width:100%; background:var(--accent);"></div>
+        <div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; background:rgba(13,15,18,0.93); z-index:4; padding:20px;">
+          <div style="font-size:10px; letter-spacing:3px; text-transform:uppercase; color:var(--muted);">book complete · a tale of two cities</div>
+          <div style="font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--accent);">storyline 10/10 · best 264 cpm</div>
+          <div style="font-size:52px; font-weight:700; color:var(--accent); line-height:1;">240<span style="font-size:14px; font-weight:400; color:var(--muted);"> cpm avg</span></div>
+          <div style="display:flex; gap:28px; margin-top:2px;">
+            <div style="display:flex; flex-direction:column; align-items:center;"><div style="font-size:22px; font-weight:600;">98%</div><div style="font-size:9px; letter-spacing:1.6px; color:var(--muted); margin-top:5px;">ACCURACY</div></div>
+            <div style="display:flex; flex-direction:column; align-items:center;"><div style="font-size:22px; font-weight:600;">11</div><div style="font-size:9px; letter-spacing:1.6px; color:var(--muted); margin-top:5px;">ERRORS</div></div>
+            <div style="display:flex; flex-direction:column; align-items:center;"><div style="font-size:22px; font-weight:600;">3m 41s</div><div style="font-size:9px; letter-spacing:1.6px; color:var(--muted); margin-top:5px;">TIME</div></div>
+          </div>
+          <div style="display:flex; gap:10px; margin-top:12px;">
+            <button style="font-size:12px; padding:8px 16px; border-radius:8px; color:var(--text); border:1px solid var(--border); background:transparent;">Retry (Tab)</button>
+            <button style="font-size:12px; padding:8px 16px; border-radius:8px; color:#0d0f12; border:1px solid var(--accent); background:var(--accent);">Next book →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
