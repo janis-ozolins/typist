@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { CSSProperties, KeyboardEvent, ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 const FONT = "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
 
@@ -178,13 +178,18 @@ export function TypingPractice() {
   const [endedAt, setEndedAt] = useState<number | null>(null);
   const endedAtRef = useRef<number | null>(null);
   const [now, setNow] = useState(Date.now());
-  const [focused, setFocused] = useState(false);
+  // Whether the window itself has focus. Element focus is not enough: inside
+  // the preview iframe the textarea can be the active element while the parent
+  // window still owns the keyboard, so keydown never reaches this document.
+  const [winFocused, setWinFocused] = useState(
+    () => typeof document !== "undefined" && document.hasFocus()
+  );
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  const setTyped = (v: string) => {
+  const setTyped = useCallback((v: string) => {
     typedRef.current = v;
     setTypedState(v);
-  };
+  }, []);
 
   const focusInput = useCallback(() => {
     const el = inputRef.current;
@@ -200,11 +205,14 @@ export function TypingPractice() {
     focusInput();
   }, [focusInput]);
 
-  // Keep `focused` in sync with the document focus, which can change without
-  // touching the textarea (e.g. clicking outside the card in a preview iframe).
+  // Track window focus, which can change without touching the textarea
+  // (e.g. clicking outside the card in a preview iframe).
   useEffect(() => {
-    const onWindowFocus = () => focusInput();
-    const onWindowBlur = () => setFocused(false);
+    const onWindowFocus = () => {
+      setWinFocused(true);
+      focusInput();
+    };
+    const onWindowBlur = () => setWinFocused(false);
     window.addEventListener("focus", onWindowFocus);
     window.addEventListener("blur", onWindowBlur);
     return () => {
@@ -261,54 +269,75 @@ export function TypingPractice() {
     if (next) selectText(next.id);
   };
 
-  const addChar = (ch: string) => {
-    if (endedAtRef.current) return;
-    const cur = typedRef.current;
-    if (cur.length >= target.length) return;
-    const t = Date.now();
-    if (!startedAtRef.current) {
-      startedAtRef.current = t;
-      setStartedAt(t);
-      setNow(t);
-    }
-    const ok = target[cur.length] === ch;
-    historyRef.current.push({ t, ok });
-    const next = cur + ch;
-    setTyped(next);
-    if (next.length >= target.length) {
-      endedAtRef.current = Date.now();
-      setEndedAt(endedAtRef.current);
-    }
-  };
+  const addChar = useCallback(
+    (ch: string) => {
+      if (endedAtRef.current) return;
+      const cur = typedRef.current;
+      if (cur.length >= target.length) return;
+      const t = Date.now();
+      if (!startedAtRef.current) {
+        startedAtRef.current = t;
+        setStartedAt(t);
+        setNow(t);
+      }
+      const ok = target[cur.length] === ch;
+      historyRef.current.push({ t, ok });
+      const next = cur + ch;
+      setTyped(next);
+      if (next.length >= target.length) {
+        endedAtRef.current = Date.now();
+        setEndedAt(endedAtRef.current);
+      }
+    },
+    [target, setTyped]
+  );
 
-  const onKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Tab") {
-      e.preventDefault();
-      resetAll();
-      return;
-    }
-    if (e.key === "Escape") {
-      e.preventDefault();
-      resetAll();
-      return;
-    }
-    if (endedAtRef.current) return;
-    if (e.ctrlKey || e.metaKey || e.altKey) return;
-    if (e.key === "Backspace") {
-      e.preventDefault();
-      setTyped(typedRef.current.slice(0, -1));
-      return;
-    }
-    if (e.key === "Enter") {
-      e.preventDefault();
-      addChar("\n");
-      return;
-    }
-    if (e.key.length === 1) {
-      e.preventDefault();
-      addChar(e.key);
-    }
-  };
+  // Handle typing at the window level: inside the preview iframe the hidden
+  // textarea may not hold element focus even when this window owns the keyboard.
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === "Tab") {
+        e.preventDefault();
+        resetAll();
+        return;
+      }
+      if (e.key === "Escape") {
+        e.preventDefault();
+        resetAll();
+        return;
+      }
+      if (endedAtRef.current) return;
+      // Let a focused button handle Enter/Space itself.
+      const targetEl = e.target as HTMLElement | null;
+      if (
+        targetEl?.tagName === "BUTTON" &&
+        (e.key === "Enter" || e.key === " ")
+      ) {
+        return;
+      }
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.key === "Backspace") {
+        e.preventDefault();
+        setTyped(typedRef.current.slice(0, -1));
+        return;
+      }
+      if (e.key === "Enter") {
+        e.preventDefault();
+        addChar("\n");
+        return;
+      }
+      if (e.key.length === 1) {
+        e.preventDefault();
+        addChar(e.key);
+      }
+    },
+    [resetAll, addChar, setTyped]
+  );
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleKeyDown]);
 
   // ---- derived stats ----
   const elapsed = startedAt ? (endedAt ?? now) - startedAt : 0;
@@ -530,9 +559,6 @@ export function TypingPractice() {
             autoCorrect="off"
             value=""
             onChange={() => {}}
-            onKeyDown={onKeyDown}
-            onFocus={() => setFocused(true)}
-            onBlur={() => setFocused(false)}
             style={{
               position: "absolute",
               opacity: 0,
@@ -547,7 +573,7 @@ export function TypingPractice() {
           />
 
           {/* click-to-focus overlay */}
-          {!focused && !endedAt && (
+          {!winFocused && !endedAt && (
             <div
               className="absolute inset-0 flex items-center justify-center"
               style={{
