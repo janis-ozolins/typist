@@ -1,4 +1,3 @@
-import type { QueryClient } from "@tanstack/react-query";
 import {
   HeadContent,
   Scripts,
@@ -14,9 +13,7 @@ import "@fontsource/jetbrains-mono/500.css";
 import font400 from "@fontsource/jetbrains-mono/files/jetbrains-mono-latin-400-normal.woff2?url";
 import font500 from "@fontsource/jetbrains-mono/files/jetbrains-mono-latin-500-normal.woff2?url";
 
-
 export interface RouterContext {
-  queryClient: QueryClient;
   /** Where `/` sends the user; see `landing.ts`. */
   landingPath: () => string | undefined;
   /** The app's display name; see `app-name.ts`. Absent only in a test's hand-built router. */
