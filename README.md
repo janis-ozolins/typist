@@ -3,14 +3,6 @@
 A typing-practice app on the Mistral apps stack: a TanStack Start web app (`apps/web`) that serves a
 single page at `/`.
 
-## Design principles
-
-Typist is deliberately bare-bones: one page, one component, no navigation, no settings, no
-decorative UI. The minimal look is the product, not an unfinished state. Agents must read
-[`AGENTS.md`](AGENTS.md) before changing anything — its design rules are hard constraints, and in
-particular: no new UI elements, screens, dependencies, or visible copy without an explicit user
-request, and no restyling of the existing dark JetBrains Mono theme.
-
 ## Features
 
 - 9 preset texts split into Prose and Code tabs: famous book openings (Dickens, Austen, Orwell, Melville, Carroll) and code snippets (FizzBuzz, quicksort, binary search, debounce)
