@@ -69,3 +69,7 @@ coverage.xml
 .omo
 .sisyphus/
 .scratch/
+
+# Playwright
+.playwright-mcp/
+
