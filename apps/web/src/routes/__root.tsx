@@ -9,6 +9,10 @@ import type { ReactNode } from "react";
 import { DEFAULT_APP_NAME } from "../app-name";
 
 import appCss from "../index.css?url";
+import "@fontsource/jetbrains-mono/400.css";
+import "@fontsource/jetbrains-mono/500.css";
+import font400 from "@fontsource/jetbrains-mono/files/jetbrains-mono-latin-400-normal.woff2?url";
+import font500 from "@fontsource/jetbrains-mono/files/jetbrains-mono-latin-500-normal.woff2?url";
 
 
 export interface RouterContext {
@@ -47,14 +51,10 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      // Discover and fetch the font stylesheet at HTML parse time, in parallel
-      // with the JS bundle, instead of waiting for hydration to inject it.
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500&display=swap",
-      },
+      // Self-hosted JetBrains Mono: preload the two weights the UI uses so
+      // they fetch in parallel with the CSS/JS, same-origin, no third party.
+      { rel: "preload", as: "font", type: "font/woff2", href: font400, crossOrigin: "anonymous" },
+      { rel: "preload", as: "font", type: "font/woff2", href: font500, crossOrigin: "anonymous" },
       { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
     ],
   }),
