@@ -221,17 +221,9 @@ export function TypingPractice() {
     };
   }, [focusInput]);
 
-  useEffect(() => {
-    const id = "jb-mono-link";
-    if (!document.getElementById(id)) {
-      const l = document.createElement("link");
-      l.id = id;
-      l.rel = "stylesheet";
-      l.href =
-        "https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap";
-      document.head.appendChild(l);
-    }
-  }, []);
+  // The font stylesheet is discovered at HTML parse time via the head() links,
+  // which start the fetch in parallel with the JS bundle instead of waiting for
+  // hydration; see PR perf/font-in-head for the measured numbers.
 
   useEffect(() => {
     if (startedAt && !endedAt) {
