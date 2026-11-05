@@ -296,11 +296,6 @@ export function TypingPractice() {
   // textarea may not hold element focus even when this window owns the keyboard.
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      if (e.key === "Tab") {
-        e.preventDefault();
-        resetAll();
-        return;
-      }
       if (e.key === "Escape") {
         e.preventDefault();
         resetAll();
@@ -319,6 +314,11 @@ export function TypingPractice() {
       if (e.key === "Backspace") {
         e.preventDefault();
         setTyped(typedRef.current.slice(0, -1));
+        return;
+      }
+      if (e.key === "Tab") {
+        e.preventDefault();
+        addChar("\t");
         return;
       }
       if (e.key === "Enter") {
@@ -632,7 +632,7 @@ export function TypingPractice() {
                     background: "transparent",
                   }}
                 >
-                  Retry (Tab)
+                  Retry (Esc)
                 </button>
                 <button
                   onClick={nextText}
@@ -658,9 +658,9 @@ export function TypingPractice() {
           className="flex items-center justify-center"
           style={{ marginTop: 14, gap: 16, fontSize: 10, color: C.muted, letterSpacing: 1 }}
         >
-          <span>tab — restart</span>
+          <span>esc — restart</span>
           <span>·</span>
-          <span>esc — reset</span>
+          <span>tab types ⇥ in code</span>
           <span>·</span>
           <span>enter types ↵ in code</span>
         </div>
