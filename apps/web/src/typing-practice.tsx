@@ -186,6 +186,33 @@ export function TypingPractice() {
     setTypedState(v);
   };
 
+  const focusInput = useCallback(() => {
+    const el = inputRef.current;
+    if (!el) return;
+    // Inside the preview iframe the document needs focus before the element
+    // can receive keydown events.
+    window.focus();
+    el.focus({ preventScroll: true });
+  }, []);
+
+  // autoFocus is ignored on hydrated SSR content, so focus on mount.
+  useEffect(() => {
+    focusInput();
+  }, [focusInput]);
+
+  // Keep `focused` in sync with the document focus, which can change without
+  // touching the textarea (e.g. clicking outside the card in a preview iframe).
+  useEffect(() => {
+    const onWindowFocus = () => focusInput();
+    const onWindowBlur = () => setFocused(false);
+    window.addEventListener("focus", onWindowFocus);
+    window.addEventListener("blur", onWindowBlur);
+    return () => {
+      window.removeEventListener("focus", onWindowFocus);
+      window.removeEventListener("blur", onWindowBlur);
+    };
+  }, [focusInput]);
+
   useEffect(() => {
     const id = "jb-mono-link";
     if (!document.getElementById(id)) {
@@ -214,10 +241,8 @@ export function TypingPractice() {
     endedAtRef.current = null;
     setEndedAt(null);
     setNow(Date.now());
-    requestAnimationFrame(() => {
-      if (inputRef.current) inputRef.current.focus();
-    });
-  }, []);
+    requestAnimationFrame(focusInput);
+  }, [focusInput]);
 
   const selectText = (id: string) => {
     setTextId(id);
@@ -436,7 +461,7 @@ export function TypingPractice() {
           }}
           onMouseDown={(e) => {
             e.preventDefault();
-            inputRef.current && inputRef.current.focus();
+            focusInput();
           }}
         >
           {/* progress bar */}
